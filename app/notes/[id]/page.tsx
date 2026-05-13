@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { INote } from "@/models/Note";
+import { notesRpc } from "@/lib/notes-rpc-client";
 import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
 import { vscDarkPlus } from "react-syntax-highlighter/dist/esm/styles/prism";
 import { ArrowLeft, Copy, Check } from "lucide-react";
@@ -19,16 +20,10 @@ export default function NoteDetailPage() {
   useEffect(() => {
     async function fetchNote() {
       try {
-        const res = await fetch(`/api/notes/${params.id}`);
-        const data = await res.json();
-        if (data.success) {
-          setNote(data.data);
-        } else {
-          toast.error(data.error || "Snippet not found");
-          router.push("/");
-        }
+        const data = await notesRpc<INote>({ op: "get", id: String(params.id) });
+        setNote(data);
       } catch (e) {
-        toast.error("Failed to fetch snippet");
+        toast.error(e instanceof Error ? e.message : "Failed to fetch snippet");
         router.push("/");
       } finally {
         setLoading(false);

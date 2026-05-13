@@ -7,6 +7,7 @@ import NoteForm from "@/components/NoteForm";
 import { Plus } from "lucide-react";
 import { INote } from "@/models/Note";
 import toast from "react-hot-toast";
+import { notesRpc } from "@/lib/notes-rpc-client";
 
 export default function Home() {
   const [notes, setNotes] = useState<INote[]>([]);
@@ -19,14 +20,13 @@ export default function Home() {
   const fetchNotes = useCallback(async (query: string = "") => {
     setLoading(true);
     try {
-      const url = query ? `/api/notes?search=${encodeURIComponent(query)}` : "/api/notes";
-      const res = await fetch(url);
-      const data = await res.json();
-      if (data.success) {
-        setNotes(data.data);
-      }
+      const data = await notesRpc<unknown[]>({
+        op: "list",
+        search: query.trim() || undefined,
+      });
+      setNotes(data as INote[]);
     } catch (error) {
-      toast.error("Failed to fetch notes");
+      toast.error(error instanceof Error ? error.message : "Failed to fetch notes");
     } finally {
       setLoading(false);
     }
@@ -40,17 +40,11 @@ export default function Home() {
     if (!window.confirm("Are you sure you want to delete this snippet?")) return;
     
     try {
-      const res = await fetch(`/api/notes/${id}`, { method: "DELETE" });
-      const data = await res.json();
-      
-      if (data.success) {
-        toast.success("Snippet deleted successfully");
-        fetchNotes(searchQuery);
-      } else {
-        toast.error(data.error || "Failed to delete");
-      }
+      await notesRpc({ op: "delete", id });
+      toast.success("Snippet deleted successfully");
+      fetchNotes(searchQuery);
     } catch (error) {
-      toast.error("Failed to delete snippet");
+      toast.error(error instanceof Error ? error.message : "Failed to delete snippet");
     }
   };
 

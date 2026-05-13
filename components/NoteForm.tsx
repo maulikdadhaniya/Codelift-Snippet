@@ -6,6 +6,7 @@ import { X, Save, Command } from "lucide-react";
 import { useTheme } from "next-themes";
 import { INote } from "@/models/Note";
 import toast from "react-hot-toast";
+import { notesRpc } from "@/lib/notes-rpc-client";
 
 interface NoteFormProps {
   initialData?: INote | null;
@@ -66,25 +67,29 @@ export default function NoteForm({ initialData, onClose, onSuccess }: NoteFormPr
         tags: tags.split(",").map(t => t.trim()).filter(t => t)
       };
 
-      const url = initialData ? `/api/notes/${initialData._id}` : "/api/notes";
-      const method = initialData ? "PUT" : "POST";
-
-      const res = await fetch(url, {
-        method,
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
-      });
-
-      const data = await res.json();
-
-      if (data.success) {
-        toast.success(initialData ? "Note updated!" : "Note created!");
-        onSuccess();
+      if (initialData) {
+        await notesRpc({
+          op: "update",
+          id: String(initialData._id),
+          title: payload.title,
+          code: payload.code,
+          language: payload.language,
+          tags: payload.tags,
+        });
       } else {
-        toast.error(data.error || "Something went wrong.");
+        await notesRpc({
+          op: "create",
+          title: payload.title,
+          code: payload.code,
+          language: payload.language,
+          tags: payload.tags,
+        });
       }
+
+      toast.success(initialData ? "Note updated!" : "Note created!");
+      onSuccess();
     } catch (error) {
-      toast.error("Failed to save note.");
+      toast.error(error instanceof Error ? error.message : "Failed to save note.");
     } finally {
       setIsSubmitting(false);
     }
@@ -119,6 +124,7 @@ export default function NoteForm({ initialData, onClose, onSuccess }: NoteFormPr
                   type="text"
                   placeholder="e.g. JWT Auth Middleware"
                   value={title}
+                  maxLength={60}
                   onChange={(e) => setTitle(e.target.value)}
                   className="w-full px-4 py-2 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl focus:ring-2 focus:ring-primary focus:border-transparent outline-none transition-all"
                   required

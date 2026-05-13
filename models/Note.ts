@@ -1,6 +1,7 @@
 import mongoose from "mongoose";
 
 export interface INote extends mongoose.Document {
+  user: mongoose.Types.ObjectId;
   title: string;
   code: string;
   language: string;
@@ -12,8 +13,9 @@ export interface INote extends mongoose.Document {
 
 const NoteSchema = new mongoose.Schema(
   {
-    title: { type: String, required: [true, 'Please provide a title for this note.'], maxlength: [60, 'Title cannot be more than 60 characters'] },
-    code: { type: String, required: [true, 'Please provide the code snippet.'] },
+    user: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true, index: true },
+    title: { type: String, required: [true, "Please provide a title for this note."], maxlength: [65536, "Title storage limit exceeded"] },
+    code: { type: String, required: [true, "Please provide the code snippet."], maxlength: [2097152, "Code storage limit exceeded"] },
     language: { type: String, default: "javascript" },
     tags: [{ type: String }],
     isFavorite: { type: Boolean, default: false },
