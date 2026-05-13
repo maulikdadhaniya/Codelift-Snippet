@@ -37,14 +37,6 @@ export default function Navbar() {
 
           <div className="flex items-center gap-3 sm:gap-4">
             {!loading && user && (
-              <Link
-                href="/crypto-tool"
-                className="hidden md:inline text-sm text-gray-500 hover:text-primary dark:text-gray-400 dark:hover:text-primary transition-colors"
-              >
-                Crypto tool
-              </Link>
-            )}
-            {!loading && user && (
               <span className="hidden sm:inline text-sm text-gray-600 dark:text-gray-400 max-w-[220px] truncate">
                 {[user.firstName, user.lastName].filter(Boolean).join(" ") || user.email}
               </span>
