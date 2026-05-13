@@ -11,7 +11,7 @@ import { encryptedPostJson } from "@/lib/crypto/hybrid-client";
 function LoginForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const { refresh, user, loading: authLoading } = useAuth();
+  const { user, loading: authLoading } = useAuth();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [submitting, setSubmitting] = useState(false);
@@ -35,9 +35,10 @@ function LoginForm() {
     setSubmitting(true);
     try {
       await encryptedPostJson("/api/auth/login", { email, password });
-      await refresh();
       toast.success("Signed in");
-      router.replace(safeRedirect());
+      // Full navigation so the new session cookie is always sent on the next load.
+      // (Immediate `refresh()` + client router can race before the cookie is applied.)
+      window.location.assign(safeRedirect());
     } catch (e) {
       toast.error(e instanceof Error ? e.message : "Login failed");
     } finally {
