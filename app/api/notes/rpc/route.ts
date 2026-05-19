@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import mongoose from "mongoose";
 import dbConnect from "@/lib/mongodb";
 import Note from "@/models/Note";
-import { getSessionFromCookies } from "@/lib/auth/session";
+import { getActiveSession } from "@/lib/auth/session";
 import {
   decryptRequestEnvelope,
   encryptResponsePayload,
@@ -25,7 +25,7 @@ function fail(message: string): NotesRpcResult {
 }
 
 export async function POST(request: Request) {
-  const session = await getSessionFromCookies();
+  const session = await getActiveSession();
   if (!session) {
     return NextResponse.json({ success: false, error: "Unauthorized" }, { status: 401 });
   }

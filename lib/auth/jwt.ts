@@ -14,10 +14,22 @@ function requireSecret() {
   return key;
 }
 
+export type UserRole = "user" | "admin";
+
 export type SessionProfile = {
   firstName: string;
   lastName: string;
   mobile?: string;
+  role: UserRole;
+};
+
+export type SessionClaims = {
+  sub: string;
+  email: string;
+  firstName: string;
+  lastName: string;
+  mobile?: string;
+  role: UserRole;
 };
 
 export async function signSessionToken(userId: string, email: string, profile: SessionProfile) {
@@ -25,6 +37,7 @@ export async function signSessionToken(userId: string, email: string, profile: S
     email,
     firstName: profile.firstName,
     lastName: profile.lastName,
+    role: profile.role,
     ...(profile.mobile ? { mobile: profile.mobile } : {}),
   };
   return new SignJWT(claims)
@@ -35,7 +48,7 @@ export async function signSessionToken(userId: string, email: string, profile: S
     .sign(requireSecret());
 }
 
-export async function verifySessionToken(token: string) {
+export async function verifySessionToken(token: string): Promise<SessionClaims | null> {
   const key = getJwtSecretBytes();
   if (!key) return null;
   try {
@@ -45,7 +58,8 @@ export async function verifySessionToken(token: string) {
     const firstName = typeof payload.firstName === "string" ? payload.firstName : "";
     const lastName = typeof payload.lastName === "string" ? payload.lastName : "";
     const mobile = typeof payload.mobile === "string" && payload.mobile ? payload.mobile : undefined;
-    return { userId: sub, email: payload.email, firstName, lastName, mobile };
+    const role: UserRole = payload.role === "admin" ? "admin" : "user";
+    return { sub, email: payload.email, firstName, lastName, mobile, role };
   } catch {
     return null;
   }

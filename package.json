@@ -7,7 +7,8 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
-    "gen-keys": "node scripts/generate-keys.mjs"
+    "gen-keys": "node scripts/generate-keys.mjs",
+    "seed-admin": "node scripts/seed-admin.mjs"
   },
   "dependencies": {
     "@monaco-editor/react": "^4.7.0",

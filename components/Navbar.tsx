@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useTheme } from "next-themes";
-import { Moon, Sun, Rocket, LogOut } from "lucide-react";
+import { Moon, Sun, Rocket, LogOut, Shield } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useAuth } from "@/components/AuthProvider";
 
@@ -36,6 +36,15 @@ export default function Navbar() {
           </Link>
 
           <div className="flex items-center gap-3 sm:gap-4">
+            {!loading && user?.role === "admin" && (
+              <Link
+                href="/admin"
+                className="hidden md:inline-flex items-center gap-1.5 text-sm font-medium text-primary hover:opacity-80 transition-opacity"
+              >
+                <Shield size={16} />
+                Admin
+              </Link>
+            )}
             {!loading && user && (
               <span className="hidden sm:inline text-sm text-gray-600 dark:text-gray-400 max-w-[220px] truncate">
                 {[user.firstName, user.lastName].filter(Boolean).join(" ") || user.email}

@@ -15,7 +15,8 @@ async function verifySession(token: string | undefined) {
     const firstName = typeof payload.firstName === "string" ? payload.firstName : "";
     const lastName = typeof payload.lastName === "string" ? payload.lastName : "";
     const mobile = typeof payload.mobile === "string" && payload.mobile ? payload.mobile : undefined;
-    return { userId: sub, email: payload.email, firstName, lastName, mobile };
+    const role = payload.role === "admin" ? "admin" : "user";
+    return { userId: sub, email: payload.email, firstName, lastName, mobile, role };
   } catch {
     return null;
   }
@@ -29,6 +30,10 @@ function isPublicPath(pathname: string) {
   if (pathname.startsWith("/api/auth/me")) return true;
   if (pathname.startsWith("/api/crypto/public-key")) return true;
   return false;
+}
+
+function isAdminPath(pathname: string) {
+  return pathname.startsWith("/admin") || pathname.startsWith("/api/admin");
 }
 
 export async function middleware(request: NextRequest) {
@@ -48,6 +53,15 @@ export async function middleware(request: NextRequest) {
     const url = request.nextUrl.clone();
     url.pathname = "/login";
     url.searchParams.set("from", pathname);
+    return NextResponse.redirect(url);
+  }
+
+  if (isAdminPath(pathname) && session.role !== "admin") {
+    if (pathname.startsWith("/api/")) {
+      return NextResponse.json({ success: false, error: "Forbidden" }, { status: 403 });
+    }
+    const url = request.nextUrl.clone();
+    url.pathname = "/";
     return NextResponse.redirect(url);
   }
 

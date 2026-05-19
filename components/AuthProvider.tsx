@@ -3,7 +3,14 @@
 import { createContext, useCallback, useContext, useEffect, useState } from "react";
 import { encryptedPostJson } from "@/lib/crypto/hybrid-client";
 
-export type AuthUser = { id: string; email: string; firstName: string; lastName: string; mobile?: string };
+export type AuthUser = {
+  id: string;
+  email: string;
+  firstName: string;
+  lastName: string;
+  role: "user" | "admin";
+  mobile?: string;
+};
 
 type AuthContextValue = {
   user: AuthUser | null;
@@ -33,6 +40,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           email: u.email,
           firstName: u.firstName ?? "",
           lastName: u.lastName ?? "",
+          role: u.role === "admin" ? "admin" : "user",
           ...(u.mobile ? { mobile: u.mobile } : {}),
         });
       } else {

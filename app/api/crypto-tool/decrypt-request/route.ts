@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { getSessionFromCookies } from "@/lib/auth/session";
+import { getActiveSession } from "@/lib/auth/session";
 import { decryptRequestEnvelope, parseRequestEnvelope } from "@/lib/crypto/hybrid-server";
 
 export const runtime = "nodejs";
@@ -9,7 +9,7 @@ export const runtime = "nodejs";
  * Plain JSON response — for debugging only; requires an authenticated session.
  */
 export async function POST(request: Request) {
-  const session = await getSessionFromCookies();
+  const session = await getActiveSession();
   if (!session) {
     return NextResponse.json({ success: false, error: "Unauthorized" }, { status: 401 });
   }
